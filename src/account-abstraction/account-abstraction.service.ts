@@ -14,13 +14,8 @@ import {
   getTokenContract,
   getUserOpHash,
   getWallet,
+  signUserOp,
 } from './utils/ether.util';
-import {
-  ecsign,
-  toRpcSig,
-  keccak256 as keccak256_buffer,
-  ECDSASignature,
-} from 'ethereumjs-util';
 
 @Injectable()
 export class AccountAbstractionService {
@@ -118,15 +113,7 @@ export class AccountAbstractionService {
     console.log(userOpHash);
 
     // Generate a signature for ethers v6
-    const message: Buffer = Buffer.concat([
-      Buffer.from('\x19Ethereum Signed Message:\n32', 'ascii'),
-      Buffer.from(ethers.toBeArray(userOpHash)),
-    ]);
-    const signature: ECDSASignature = ecsign(
-      keccak256_buffer(message),
-      Buffer.from(ethers.toBeArray(privateKey)),
-    );
-    const signatureForRPC = toRpcSig(signature.v, signature.r, signature.s);
+    const signatureForRPC = signUserOp(userOpHash, privateKey);
     // console.log(signatureForRPC);
 
     // Add signature into packedUserOperation.

@@ -3,6 +3,12 @@ import * as EntryPoint from './abi/EntryPoint.json';
 import * as SimpleAccount from './abi/SimpleAccount.json';
 import * as Token from './abi/Token.json';
 import { PackedUserOperation } from '../interfaces/useroperation.interface';
+import {
+  ecsign,
+  toRpcSig,
+  keccak256 as keccak256_buffer,
+  ECDSASignature,
+} from 'ethereumjs-util';
 
 export function getJsonRpcProvider(url: string): ethers.JsonRpcProvider {
   return new ethers.JsonRpcProvider(url);
@@ -99,4 +105,18 @@ export function getUserOpHash(
     [userOpHash, entrypoint, chainId],
   );
   return ethers.keccak256(enc);
+}
+
+export function signUserOp(userOpHash: string, privateKey: string): string {
+  const message: Buffer = Buffer.concat([
+    Buffer.from('\x19Ethereum Signed Message:\n32', 'ascii'),
+    Buffer.from(ethers.toBeArray(userOpHash)),
+  ]);
+  const signature: ECDSASignature = ecsign(
+    keccak256_buffer(message),
+    Buffer.from(ethers.toBeArray(privateKey)),
+  );
+  const signatureForRPC = toRpcSig(signature.v, signature.r, signature.s);
+
+  return signatureForRPC;
 }
