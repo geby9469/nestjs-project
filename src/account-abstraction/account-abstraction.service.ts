@@ -15,6 +15,12 @@ import {
   getUserOpHash,
   getWallet,
 } from './utils/ether.util';
+import {
+  ecsign,
+  toRpcSig,
+  keccak256 as keccak256_buffer,
+  ECDSASignature,
+} from 'ethereumjs-util';
 
 @Injectable()
 export class AccountAbstractionService {
@@ -61,6 +67,7 @@ export class AccountAbstractionService {
     // console.log(executeCalldata);
 
     // Fetch the nonce from the EntryPoint.
+    // you should annotate if Remix IDE.
     // const entrypointAddress = this.config.get<string>('ENTRYPOINT_ADDRESS');
     // const privateKey = this.config.get<string>('PRIVATE_KEY');
     // const entryPointContract: ethers.Contract = getEntryPointContract(
@@ -80,7 +87,7 @@ export class AccountAbstractionService {
     const gasFees: string = encodeGasFees(550_000, 900_000);
     const packedUserOperation: PackedUserOperation = {
       sender: smartContractWalletContract.target.toString(),
-      nonce: '3',
+      nonce: '1',
       initCode: '0x',
       callData: executeCalldata,
       accountGasLimits: accountGasLimits,
@@ -97,36 +104,45 @@ export class AccountAbstractionService {
   async handleOps(
     packedUserOperation: PackedUserOperation[],
     beneficiary: string,
-  ) {
+  ): Promise<boolean> {
     const url = this.config.get<string>('BLOCKCHAIN_URI');
     const entrypointAddress = this.config.get<string>('ENTRYPOINT_ADDRESS');
     const privateKey = this.config.get<string>('PRIVATE_KEY');
+    const chainId = this.config.get<number>('BLOCKCHAIN_CHAIN_ID');
 
-    const userOpHash = getUserOpHash(
+    const userOpHash: string = getUserOpHash(
       packedUserOperation[0],
       entrypointAddress,
-      1,
+      chainId,
     );
-    // console.log(userOpHash);
+    console.log(userOpHash);
 
-    const wallet: ethers.Wallet = getWallet(url, privateKey);
-    const signature: string = await wallet.signMessage(userOpHash);
-    console.log(signature);
+    // Generate a signature for ethers v6
+    const message: Buffer = Buffer.concat([
+      Buffer.from('\x19Ethereum Signed Message:\n32', 'ascii'),
+      Buffer.from(ethers.toBeArray(userOpHash)),
+    ]);
+    const signature: ECDSASignature = ecsign(
+      keccak256_buffer(message),
+      Buffer.from(ethers.toBeArray(privateKey)),
+    );
+    const signatureForRPC = toRpcSig(signature.v, signature.r, signature.s);
+    // console.log(signatureForRPC);
 
     // Add signature into packedUserOperation.
-    // const packedUserOperationWithSignature: string[][] =
-    //   packedUserOperation.map((value) => [
-    //     value.sender,
-    //     value.nonce,
-    //     value.initCode,
-    //     value.callData,
-    //     value.accountGasLimits,
-    //     value.preVerificationGas,
-    //     value.gasFees,
-    //     value.paymasterAndData,
-    //     signature,
-    //   ]);
-    // console.log(packedUserOperationWithSignature);
+    const packedUserOperationWithSignature: string[][] =
+      packedUserOperation.map((value) => [
+        value.sender,
+        value.nonce,
+        value.initCode,
+        value.callData,
+        value.accountGasLimits,
+        value.preVerificationGas,
+        value.gasFees,
+        value.paymasterAndData,
+        signatureForRPC,
+      ]);
+    console.log(packedUserOperationWithSignature);
 
     // const entrypintContract: ethers.Contract = getEntryPointContract(
     //   entrypointAddress,
@@ -145,6 +161,8 @@ export class AccountAbstractionService {
     // console.log(tx);
     // const receipt: TransactionReceipt = await tx.wait();
     // console.log(receipt);
+
+    return true;
   }
 
   findAll() {

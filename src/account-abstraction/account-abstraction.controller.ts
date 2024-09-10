@@ -23,13 +23,12 @@ export class AccountAbstractionController {
       await this.accountAbstractionService.createUserOperation();
     console.log(packedUserOperation);
 
-    const result = await this.accountAbstractionService.handleOps(
+    const isSuccess: boolean = await this.accountAbstractionService.handleOps(
       [packedUserOperation],
       beneficiary,
     );
-    console.log(result);
 
-    return true;
+    return isSuccess;
   }
 
   @Get()
