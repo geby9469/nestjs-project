@@ -35,6 +35,7 @@ ERC20_CONTRACT_ADDRESS
 PRIVATE_KEY  
 RECEIVER_ACCOUNT  
 
-# API
+# API specifications
 
-EntryPoint handleOps: account-abstraction/entrypoint/handleOps?beneficiary=0x...
+## EntryPoint handleOps 
+transfer ERC20: account-abstraction/entrypoint/handleOps/erc20/transfer?beneficiary=0x...

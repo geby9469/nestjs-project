@@ -17,10 +17,12 @@ export class AccountAbstractionController {
     private readonly accountAbstractionService: AccountAbstractionService,
   ) {}
 
-  @Post('entrypoint/handleOps')
-  async entryPointHandleOps(@Query('beneficiary') beneficiary: string) {
+  @Post('entrypoint/handleOps/erc20/transfer')
+  async entryPointHandleOpsForTransferERC20(
+    @Query('beneficiary') beneficiary: string,
+  ) {
     const packedUserOperation: PackedUserOperation =
-      await this.accountAbstractionService.createUserOperation();
+      await this.accountAbstractionService.createUserOperationForTransferERC20();
     console.log(packedUserOperation);
 
     const isSuccess: boolean = await this.accountAbstractionService.handleOps(

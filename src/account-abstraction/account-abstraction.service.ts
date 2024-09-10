@@ -13,7 +13,6 @@ import {
   getSmartContractWalletContract,
   getTokenContract,
   getUserOpHash,
-  getWallet,
   signUserOp,
 } from './utils/ether.util';
 
@@ -21,7 +20,7 @@ import {
 export class AccountAbstractionService {
   constructor(private readonly config: ConfigService) {}
 
-  async createUserOperation(): Promise<PackedUserOperation> {
+  async createUserOperationForTransferERC20(): Promise<PackedUserOperation> {
     // Blockchain provider
     const url = this.config.get<string>('BLOCKCHAIN_URI');
     // const jsonRpcProvider: ethers.JsonRpcProvider = getJsonRpcProvider(url);
@@ -63,18 +62,18 @@ export class AccountAbstractionService {
 
     // Fetch the nonce from the EntryPoint.
     // you should annotate if Remix IDE.
-    // const entrypointAddress = this.config.get<string>('ENTRYPOINT_ADDRESS');
-    // const privateKey = this.config.get<string>('PRIVATE_KEY');
-    // const entryPointContract: ethers.Contract = getEntryPointContract(
-    //   entrypointAddress,
-    //   url,
-    //   privateKey,
-    // );
-    // const nonce = await entryPointContract.getNonce(
-    //   smartContractWalletAddress,
-    //   0,
-    // );
-    // console.log('nonce', nonce);
+    const entrypointAddress = this.config.get<string>('ENTRYPOINT_ADDRESS');
+    const privateKey = this.config.get<string>('PRIVATE_KEY');
+    const entryPointContract: ethers.Contract = getEntryPointContract(
+      entrypointAddress,
+      url,
+      privateKey,
+    );
+    const nonce = await entryPointContract.getNonce(
+      smartContractWalletAddress,
+      0,
+    );
+    console.log('nonce', nonce);
 
     // Create a packedUserOperation.
     const preVerificationGas: string = '500000';
@@ -82,7 +81,7 @@ export class AccountAbstractionService {
     const gasFees: string = encodeGasFees(550_000, 900_000);
     const packedUserOperation: PackedUserOperation = {
       sender: smartContractWalletContract.target.toString(),
-      nonce: '1',
+      nonce: nonce,
       initCode: '0x',
       callData: executeCalldata,
       accountGasLimits: accountGasLimits,
@@ -110,7 +109,7 @@ export class AccountAbstractionService {
       entrypointAddress,
       chainId,
     );
-    console.log(userOpHash);
+    // console.log(userOpHash);
 
     // Generate a signature for ethers v6
     const signatureForRPC = signUserOp(userOpHash, privateKey);
@@ -131,23 +130,24 @@ export class AccountAbstractionService {
       ]);
     console.log(packedUserOperationWithSignature);
 
-    // const entrypintContract: ethers.Contract = getEntryPointContract(
-    //   entrypointAddress,
-    //   url,
-    //   privateKey,
-    // );
+    const entrypintContract: ethers.Contract = getEntryPointContract(
+      entrypointAddress,
+      url,
+      privateKey,
+    );
 
-    // const tx: ContractTransactionResponse = await entrypintContract.handleOps(
-    //   packedUserOperation,
-    //   beneficiary,
-    //   {
-    //     gasLimit: 3_000_000,
-    //     gasPrice: 0,
-    //   },
-    // );
+    const tx: ContractTransactionResponse = await entrypintContract.handleOps(
+      packedUserOperationWithSignature,
+      beneficiary,
+      {
+        gasLimit: 3_000_000,
+        gasPrice: 0,
+      },
+    );
     // console.log(tx);
-    // const receipt: TransactionReceipt = await tx.wait();
-    // console.log(receipt);
+
+    const receipt: TransactionReceipt = await tx.wait();
+    console.log(receipt);
 
     return true;
   }
