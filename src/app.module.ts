@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AccountAbstractionModule } from './account-abstraction/account-abstraction.module';
 import { ConfigModule } from '@nestjs/config';
+import { RollupsModule } from './rollups/rollups.module';
 @Module({
   providers: [AppService],
   controllers: [AppController],
@@ -13,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: [__dirname + '/../env/.env.local'],
     }),
     AccountAbstractionModule,
+    RollupsModule,
   ],
 })
 export class AppModule {}
