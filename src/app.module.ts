@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { AccountAbstractionModule } from './account-abstraction/account-abstraction.module';
 import { ConfigModule } from '@nestjs/config';
 import { RollupsModule } from './rollups/rollups.module';
+import { HdWalletModule } from './hd-wallet/hd-wallet.module';
 @Module({
   providers: [AppService],
   controllers: [AppController],
@@ -15,6 +16,7 @@ import { RollupsModule } from './rollups/rollups.module';
     }),
     AccountAbstractionModule,
     RollupsModule,
+    HdWalletModule,
   ],
 })
 export class AppModule {}
