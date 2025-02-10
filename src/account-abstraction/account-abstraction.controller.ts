@@ -33,15 +33,15 @@ export class AccountAbstractionController {
     return isSuccess;
   }
 
-  @Get()
+  @Get('simple-account')
   findAll() {
-    return this.accountAbstractionService.findAll();
+    return this.accountAbstractionService.getSimpleAccountThroughFactory();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.accountAbstractionService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.accountAbstractionService.findOne(+id);
+  // }
 
   // @Patch(':id')
   // update(
@@ -54,8 +54,8 @@ export class AccountAbstractionController {
   //   );
   // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.accountAbstractionService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.accountAbstractionService.remove(+id);
+  // }
 }

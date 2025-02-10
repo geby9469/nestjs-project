@@ -1,46 +1,23 @@
 # Description
 
-Everything about Blockchain.  
-List of current implementation
+This project is Blockchain API. \
+Current implementations as follow:
 
-1. Account Abstraction API
-2. Rollups API
+1. Account Abstraction
+2. Rollups
 3. HD wallet and BLS and signature aggregation
-
-# Test
 
 ## development environment
 
-Postman
+Nest.js, Postman
 
-Nest.js
+* .env file \
+ For blokchain: BLOCKCHAIN_URI, BLOCKCHAIN_CHAIN_ID \
+ For accounts: PRIVATE_KEY, PUBLIC_KEY, RECEIVER_ACCOUNT \
+ For smart contract: ENTRYPOINT_ADDRESS, SMART_CONTRACT_WALLET_ADDRESS, ERC20_CONTRACT_ADDRESS \
 
-### Remix IDE
+## API specifications
 
-* EntryPoint.sol
-* SimpleAccountFactory.sol
-* SimpleAccount.sol
-* Token.sol
+### EntryPoint handleOps
 
-## .env file
-
-### For blokchain
-
-BLOCKCHAIN_URI  
-BLOCKCHAIN_CHAIN_ID  
-
-### For smart contract
-
-ENTRYPOINT_ADDRESS  
-SMART_CONTRACT_WALLET_ADDRESS  
-ERC20_CONTRACT_ADDRESS  
-
-### For accounts
-
-PRIVATE_KEY  
-RECEIVER_ACCOUNT  
-
-# API specifications
-
-## EntryPoint handleOps 
 transfer ERC20: account-abstraction/entrypoint/handleOps/erc20/transfer?beneficiary=0x...

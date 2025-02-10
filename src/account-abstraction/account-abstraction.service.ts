@@ -1,6 +1,7 @@
 import { PackedUserOperation } from './interfaces/useroperation.interface';
 import { Injectable } from '@nestjs/common';
 import {
+  Contract,
   ContractTransactionResponse,
   ethers,
   TransactionReceipt,
@@ -10,11 +11,15 @@ import {
   encodeAccountGasLimits,
   encodeGasFees,
   getEntryPointContract,
+  getJsonRpcProvider,
+  getSimpleAccountFactoryContract,
   getSmartContractWalletContract,
   getTokenContract,
   getUserOpHash,
+  getWallet,
   signUserOp,
 } from './utils/ether.util';
+import { privateToAddress } from 'ethereumjs-util';
 
 @Injectable()
 export class AccountAbstractionService {
@@ -152,8 +157,49 @@ export class AccountAbstractionService {
     return true;
   }
 
-  findAll() {
-    return `This action returns all accountAbstraction`;
+  async getSimpleAccountThroughFactory() {
+    const url = this.config.get<string>('BLOCKCHAIN_URI');
+    const privateKey = this.config.get<string>('PRIVATE_KEY');
+    const entryPointAddress = this.config.get<string>('ENTRYPOINT_ADDRESS');
+    const smartContractWalletAddress = this.config.get<string>(
+      'SMART_CONTRACT_WALLET_ADDRESS',
+    );
+    const publicKey = this.config.get<string>('PUBLIC_KEY');
+
+    // Already deployed using Hardhat.
+    const simpleAccountFactory = getSimpleAccountFactoryContract(
+      smartContractWalletAddress,
+      url,
+      privateKey,
+    );
+    // console.log(simpleAccountFactory);
+
+    const tx = await simpleAccountFactory.createAccount(publicKey, 1);
+    await tx.wait();
+
+    const createdSimpleAccount = await simpleAccountFactory.getFunction(
+      'getAddress',
+    )(publicKey, 1);
+
+    const scw = getSmartContractWalletContract(createdSimpleAccount, url);
+
+    const addressOfEntryPointConnectedWithSimpleAccount =
+      await scw.entryPoint();
+    if (addressOfEntryPointConnectedWithSimpleAccount == entryPointAddress) {
+      console.log(
+        'The EntryPoint address of SimpleAccount is the same as the already deployed EntryPoint address.',
+        addressOfEntryPointConnectedWithSimpleAccount,
+      );
+    }
+    const ownerOfSimpleAccount = await scw.owner();
+    if (ownerOfSimpleAccount == publicKey) {
+      console.log(
+        'The owner of SimpleAccount is the same as the public key.',
+        ownerOfSimpleAccount,
+      );
+    }
+
+    return scw.target;
   }
 
   findOne(id: number) {

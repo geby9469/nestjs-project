@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateHdWalletDto } from './dto/create-hd-wallet.dto';
 import { UpdateHdWalletDto } from './dto/update-hd-wallet.dto';
-import { ethers } from 'ethers';
+import { ethers, getAccountPath, Mnemonic, randomBytes } from 'ethers';
 import { bls12_381 as bls } from '@noble/curves/bls12-381';
 
 @Injectable()
@@ -69,22 +69,59 @@ export class HdWalletService {
 
   findAll() {
     // create a HD wallet.
-    const wallet = ethers.Wallet.createRandom();
-    console.log(wallet);
+    // const wallet = ethers.Wallet.createRandom();
+    // console.log(wallet);
 
-    // recover the wallet using mnemonic code
-    const recoveredHDWallet = ethers.Wallet.fromPhrase(
+    // // recover the wallet using mnemonic code
+    // const recoveredHDWallet = ethers.Wallet.fromPhrase(
+    //   'inner rack under input must inner smoke sweet error narrow parade client',
+    // );
+    // console.log(recoveredHDWallet);
+
+    // // generates a seed(64-byte number) from mnemonic code. convert mnemonic code into the seed.
+    // const seed = recoveredHDWallet.mnemonic.computeSeed();
+    // console.log(seed);
+
+    // // create accounts
+    // // TODO: Register issue in ethers.js https://github.com/ethers-io/ethers.js/issues/4848
+    // const account1 = recoveredHDWallet.derivePath("m/44'/60'/0'/0/1");
+    // console.log(account1);
+
+    // test 1
+    // // create a HD wallet.
+    // const wallet = ethers.Wallet.createRandom();
+    // console.log(wallet);
+
+    // // and then I want to derive path from the wallet.
+    // const account1 = wallet.derivePath('1');
+    // console.log(account1);
+
+    // // OR just derive child
+    // const account2 = wallet.deriveChild(1);
+    // console.log(account2);
+
+    // test 2
+    const mnemonic = Mnemonic.fromPhrase(
       'inner rack under input must inner smoke sweet error narrow parade client',
     );
-    console.log(recoveredHDWallet);
+    console.log(mnemonic);
+    const path = `m/44'/60'/0'/0/1`;
+    const hdWallet = ethers.HDNodeWallet.fromMnemonic(mnemonic!, path);
+    console.log(hdWallet);
 
-    // generates a seed(64-byte number) from mnemonic code. convert mnemonic code into the seed.
-    const seed = recoveredHDWallet.mnemonic.computeSeed();
+    // test 3: hd wallet with depth-zero.
+    // Create a root wallet (this will have no mnemonic as a seed cannot be reversed)
+    const seed = randomBytes(16);
     console.log(seed);
+    const root = ethers.HDNodeWallet.fromSeed(seed);
+    console.log(root);
 
-    // create accounts
-    // TODO: Register issue in ethers.js https://github.com/ethers-io/ethers.js/issues/4848
-    const account1 = recoveredHDWallet.derivePath("m/44'/60'/0'/0/1");
+    // Create a root wallet with a mnemonic
+    const root2 = ethers.HDNodeWallet.createRandom(null, 'm');
+    console.log(root2);
+
+    // Derive account 1:
+    const account1 = root2.derivePath(getAccountPath(1));
     console.log(account1);
 
     return true;

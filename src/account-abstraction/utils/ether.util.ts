@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import * as EntryPoint from './abi/EntryPoint.json';
 import * as SimpleAccount from './abi/SimpleAccount.json';
+import * as SimpleAccountFactory from './abi/SimpleAccountFactory.json';
 import * as Token from './abi/Token.json';
 import { PackedUserOperation } from '../interfaces/useroperation.interface';
 import {
@@ -21,11 +22,23 @@ export function getWallet(url: string, privateKey: string): ethers.Wallet {
 export function getEntryPointContract(
   address: string,
   url: string,
-  privateKey: string,
+  privateKey?: string,
 ): ethers.Contract {
   return new ethers.Contract(
     address,
     EntryPoint.abi,
+    getWallet(url, privateKey),
+  );
+}
+
+export function getSimpleAccountFactoryContract(
+  address: string,
+  url: string,
+  privateKey?: string,
+): ethers.Contract {
+  return new ethers.Contract(
+    address,
+    SimpleAccountFactory.abi,
     getWallet(url, privateKey),
   );
 }
