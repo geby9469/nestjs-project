@@ -1,55 +1,56 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { HdWalletService } from './hd-wallet.service';
-import { CreateHdWalletDto } from './dto/create-hd-wallet.dto';
-import { UpdateHdWalletDto } from './dto/update-hd-wallet.dto';
 
 @Controller('hd-wallet')
 export class HdWalletController {
   constructor(private readonly hdWalletService: HdWalletService) {}
 
-  @Post()
-  create(@Body() createHdWalletDto: CreateHdWalletDto) {
-    return this.hdWalletService.create(createHdWalletDto);
+  @Get()
+  getHdWallet() {
+    return this.hdWalletService.getHdWallet();
   }
+
+  @Get('privatekey')
+  getPrivateKeyOfHdWallet() {
+    return this.hdWalletService.getPrivateKeyOfHdWallet();
+  }
+
+  @Post('child')
+  createChildHdWallet(@Body() dto) {
+    return this.hdWalletService.createChildHdWallet(dto);
+  }
+
+  // TODO: WIP 🚧. SHOULD be managed child wallet.
+  // @Get('child')
+  // getChildHdWallet() {
+  //   return this.hdWalletService.getChildHdWallet();
+  // }
 
   @Post('bls')
-  createBLS() {
-    return this.hdWalletService.createBLS();
+  createBlsSignature(@Body() dto) {
+    return this.hdWalletService.createBlsSignature(dto.message, dto.privateKey);
   }
 
-  @Post('bls-aggregation')
-  aggregateBLS() {
-    return this.hdWalletService.aggregateBSL();
+  @Post('bls/verification')
+  verifyBlsSignature(@Body() dto) {
+    return this.hdWalletService.verifyBlsSignature(
+      dto.message,
+      dto.privateKey,
+      dto.signature,
+    );
   }
 
-  @Get()
-  findAll() {
-    return this.hdWalletService.findAll();
+  @Post('bls/aggregation')
+  aggregateBLS(@Body() dto) {
+    return this.hdWalletService.aggregateBlsSignatures(dto.signatures);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.hdWalletService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateHdWalletDto: UpdateHdWalletDto,
-  ) {
-    return this.hdWalletService.update(+id, updateHdWalletDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.hdWalletService.remove(+id);
+  @Post('bls/aggregation/verification')
+  verifyAggregatedBlsSignature(@Body() dto) {
+    return this.hdWalletService.verifyAggregatedBlsSignature(
+      dto.signature,
+      dto.messages,
+      dto.privateKeys,
+    );
   }
 }
